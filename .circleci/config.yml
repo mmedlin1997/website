@@ -1,0 +1,60 @@
+# Javascript Node CircleCI 2.0 configuration file
+# Check https://circleci.com/docs/2.0/language-javascript/ for more details
+version: 2  # use CircleCI 2.0
+jobs:  # a collection of steps
+
+  # Build section - run tests for Node JS application  
+  build:  # runs not using Workflows must have a `build` job as entry point
+    working_directory: ~/app  # directory where steps will run
+    docker:  # run the steps with Docker
+      - image: circleci/node:8.11
+    steps:  # a collection of executable commands 
+      - checkout  # special step to check out source code to working directory
+      - run:
+          name: npm install
+          command: 'sudo npm install --no-optional --no-package-lock -g npm@5.6 npm'
+      - run:
+          name: npm version
+          command: 'npm -v'
+      - restore_cache:  # special step to restore the dependency cache 
+          key: dependency-cache-{{ checksum "package.json" }}
+      - run:
+          name: install dependencies
+          command: npm install
+      - save_cache:  # special step to save the dependency cache
+          key: dependency-cache-{{ checksum "package.json" }}
+          paths:
+            - ./node_modules
+      - run: # run tests
+          name: test
+          command: npm test
+
+  # Deploy section
+  deploy:
+    machine:
+      enabled: true
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "23:d0:4d:83:b6:a2:a9:7d:29:56:b6:4b:fc:36:b0:c7"
+      - run:
+          name: Deploy Over SSH
+          command: |
+            ls -al ~/.ssh
+            cat ~/.ssh/id_rsa_23d04d83b6a2a97d2956b64bfc36b0c7
+            cat ~/.ssh/authorized_keys
+            cat /home/circleci/.ssh/config
+            ssh -vvv $SSH_USER@$SSH_HOST "sh ~/scripts/deploy.sh"  
+
+# Workflow section
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
