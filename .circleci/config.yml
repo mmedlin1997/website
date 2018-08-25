@@ -36,12 +36,12 @@ jobs:  # a collection of steps
     steps:
       - add_ssh_keys:
           fingerprints:
-            - "23:d0:4d:83:b6:a2:a9:7d:29:56:b6:4b:fc:36:b0:c7"
+            - "4c:bd:cd:c0:9c:d4:c6:6b:ab:d8:18:3b:17:ef:06:fe"
       - run:
           name: Deploy Over SSH
           command: |
             ls -al ~/.ssh
-            cat ~/.ssh/id_rsa_23d04d83b6a2a97d2956b64bfc36b0c7
+            cat ~/.ssh/id_rsa_4cbdcdc09cd4c66babd8183b17ef06fe
             cat ~/.ssh/authorized_keys
             cat /home/circleci/.ssh/config
             ssh -vvv $SSH_USER@$SSH_HOST "sh ~/scripts/deploy.sh"  
